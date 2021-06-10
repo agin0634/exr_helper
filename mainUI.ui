@@ -558,11 +558,6 @@ background-color: rgb(98, 98, 98);</string>
 border-style:none;
 color: rgb(255, 255, 255);</string>
              </property>
-             <item>
-              <property name="text">
-               <string>Remove Alpha Channel</string>
-              </property>
-             </item>
             </widget>
            </item>
            <item>

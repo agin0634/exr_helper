@@ -58,19 +58,24 @@ class AppWindow(QMainWindow, Ui_MainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        self.setWindowTitle('EXR helper - v1.1.0')
-        self.ui.BuildNumber.setText('v1.1.0')
         self.bIsPathValid = False
         self.bIsAllFilesFine = False
         self.currOutPath = ''
-
         self.exrFiles = []
+        self.options = ['Remove Alpha Channel']
 
+        # ui
+        self.setWindowTitle('EXR helper - v1.1.1')
+        self.ui.BuildNumber.setText('v1.1.1')
+        self.ui.OutputOption.addItems(self.options)
+
+        # logger handler hook up
         handler = LogHandler(self)
         logging.getLogger().addHandler(handler)
         logging.getLogger().setLevel(logging.INFO)
         handler.new_record.connect(self.ui.plain.appendPlainText)
 
+        # Qthreads 
         self.checkThread = check_Thread(self.checkProcess, ())
         self.outputThread = output_Thread(self.outputProcess, ())
 
@@ -181,6 +186,7 @@ class AppWindow(QMainWindow, Ui_MainWindow):
     def eventClearLog(self):
         self.ui.plain.clear()
 
+    # multi-thread works
     def checkProcess(self):
         self.ui.CheckButton.setEnabled(False)
         self.ui.StartButton.setEnabled(False)
@@ -218,13 +224,15 @@ class AppWindow(QMainWindow, Ui_MainWindow):
         start_time = time.time()
         succeededFilesCount = 0
 
-        for f in self.exrFiles:
-            if not self.outputThread.bIsRunning:
-                break
-            if App.removeAlpha(str(f), str(f.name), self.currOutPath):
-                succeededFilesCount += 1
-            time.sleep(0.01)
-        
+        if self.ui.OutputOption.currentText() == self.options[0]:
+            # remove alpha channel
+            for f in self.exrFiles:
+                if not self.outputThread.bIsRunning:
+                    break
+                if App.removeAlpha(str(f), str(f.name), self.currOutPath):
+                    succeededFilesCount += 1
+                time.sleep(0.01)
+                
         logging.info('--- Completed: %d succeeded, %d failed ---' % (succeededFilesCount, len(self.exrFiles) - succeededFilesCount)) 
         logging.info("--- %s seconds ---" % (time.time() - start_time))
 
